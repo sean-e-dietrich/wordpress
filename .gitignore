@@ -3,3 +3,4 @@
 
 # WordPress
 wp-config.php
+*.DS_Store
