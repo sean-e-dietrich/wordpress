@@ -47,7 +47,7 @@ is_windows ()
 # Generate wp-config.php file
 generate_config ()
 {
-	cd $DOCROOT_PATH
+	cd $DOCROOT
 
 	fin exec "rm -f wp-config.php"
 	fin exec "wp core config --dbname=${MYSQL_DATABASE} --dbuser=${MYSQL_USER} --dbpass=${MYSQL_PASSWORD} --dbhost=db"
@@ -56,6 +56,16 @@ generate_config ()
 # Install site
 site_install ()
 {
+#	fin exec "mv ${DOCROOT}/wp-config.php ${PROJECT_ROOT}/wp-config-local.php"
+
+#	fin exec "git clone ${GITREPO} ${DOCROOT}"
+
+#	echo "Waiting 10s for repo to clone...";
+#	sleep 10
+
+#	fin exec "mv ${PROJECT_ROOT}/wp-config-local.php ${DOCROOT}/wp-config-local.php"
+
+
 	cd $DOCROOT_PATH
 
 	fin exec "wp core install \
@@ -64,6 +74,15 @@ site_install ()
 		--admin_user=${WP_ADMIN_USER} \
 		--admin_password=${WP_ADMIN_PASS} \
 		--admin_email=${WP_ADMIN_EMAIL}"
+}
+
+pull_pantheon_db () 
+{
+	fin exec "terminus backup:get ${PANTHEON_ID}.${PANTHEON_ENV} --element=database --to=${PROJECT_ROOT}/db-dump.sql"
+
+	fin exec "wp db import ${PROJECT_ROOT}/db-dump.sql"
+	fin exec 'wp option update siteurl "http://${VIRTUAL_HOST}"'
+	fin exec 'wp option update home "http://${VIRTUAL_HOST}"'
 }
 
 #-------------------------- END: Functions --------------------------------
@@ -90,8 +109,11 @@ sleep 10
 echo -e "${green_bg} Step 2 ${NC}${green} Generating wp-config.php...${NC}"
 generate_config
 
-echo -e "${green_bg} Step 3 ${NC}${green} Installing site...${NC}"
+echo -e "${green_bg} Step 3 ${NC}${green} Installing site... ${GITREPO} ${NC}"
 time site_install
+
+echo -e "${green_bg} Step 4 ${NC}${green} Restoring database... ${NC}"
+time pull_pantheon_db
 
 
 if is_windows; then
