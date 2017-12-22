@@ -78,11 +78,11 @@ site_install ()
 
 pull_pantheon_db () 
 {
-	fin exec "terminus backup:get ${PANTHEON_ID}.${PANTHEON_ENV} --element=database --to=${PROJECT_ROOT}/db-dump.sql"
+	fin terminus backup:get ${PANTHEON_ID}.${PANTHEON_ENV} --element=database --to=/tmp/db-dump.sql
 
-	fin exec "wp db import ${PROJECT_ROOT}/db-dump.sql"
-	fin exec 'wp option update siteurl "http://${VIRTUAL_HOST}"'
-	fin exec 'wp option update home "http://${VIRTUAL_HOST}"'
+	fin wp db import /tmp/db-dump.sql
+	fin wp option update siteurl "http://${VIRTUAL_HOST}"
+	fin wp option update home "http://${VIRTUAL_HOST}"
 }
 
 #-------------------------- END: Functions --------------------------------
